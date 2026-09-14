@@ -1,0 +1,17 @@
+# Terraform local state and working files
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars.json
+crash.log
+crash.*.log
+environments/dev/terraform.tfvars
+# Terraform plan output
+*.tfplan
+
+# Local variable and secret files
+*.auto.tfvars
+*.auto.tfvars.json
+
+# macOS metadata
+.DS_Store
