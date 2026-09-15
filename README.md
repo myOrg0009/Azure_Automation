@@ -107,6 +107,9 @@ What's already in place, and why - full reasoning for each in [decisions.md](dec
 - [ ] Private AKS cluster for prod
 - [ ] GitOps, observability, and governance layers
 
+<img width="1774" height="887" alt="image" src="https://github.com/user-attachments/assets/14ab5867-0695-438f-98da-784a809c0a90" />
+
+
 ## License
 
 [MIT](LICENSE)
