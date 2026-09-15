@@ -1,4 +1,4 @@
-## Decision: Added NSG to every subnet by default (Week 1)
+## Decision: Added NSG to every subnet by default 
 **Why:** Checkov CKV2_AZURE_31 — enterprise security baseline
 requires every subnet to have an NSG. Good practice regardless
 of the check — NSGs provide subnet-level traffic control.
@@ -20,17 +20,15 @@ lower latency, no extra cost. Better for dev and prod.
 (~$70/month) enforced in staging/prod where SLA matters.
 
 **Skipped CKV_AZURE_232 (system node taint):** Single node pool
-in dev is fine. Separate system/user node pools added in Week 3.
+in dev is fine. Separate system/user node pools added 
 
 **Skipped CKV_AZURE_172 (Secrets Store CSI):** Key Vault + CSI
-driver integration is Week 3. Skipping until that module exists.
+driver integration. Skipping until that module exists.
 
 > Running log of every technical decision made in this project.
 > Format: what, why, alternatives considered, when to revisit.
 
 ---
-
-## Week 1 — Foundation
 
 ### Decision: Azure Blob Storage over HCP Terraform for state
 **What:** Terraform state stored in Azure Blob Storage container
@@ -73,7 +71,7 @@ secret means compromised cluster access
 and testing. No geo-replication or private endpoints needed yet.
 Cost: ~$5/month vs ~$175/month for Premium
 **Alternative considered:** Premium SKU — rejected for dev due to cost
-**Revisit:** Week 3 — upgrade to Standard/Premium for staging/prod
+**Revisit:** — upgrade to Standard/Premium for staging/prod
 when private endpoints and geo-replication are needed
 
 ---
@@ -101,7 +99,7 @@ a corrupted state file affects all workspaces
 
 ---
 
-## Week 1 — Checkov Decisions
+## Checkov Decisions
 
 ### Fixed: CKV_AZURE_168 — max_pods = 50
 **What:** Added max_pods = 50 to AKS default node pool
@@ -127,15 +125,11 @@ Disabling it forces all access through Azure AD — proper IAM.
 ### Fixed: CKV_AZURE_4 — Azure Monitor logging
 **What:** Added oms_agent block with Log Analytics workspace
 **Why:** Cluster logs and metrics forwarded to Log Analytics.
-Foundation for observability in Week 3.
-
 ---
 
 ### Fixed: CKV_AZURE_116 — Azure Policy add-on
 **What:** Added azure_policy_enabled = true to AKS cluster
 **Why:** Enables Azure Policy enforcement at the pod level.
-Foundation for governance layer in Week 3.
-
 ---
 
 ### Skipped: CKV_AZURE_170 — Paid SKU for SLA
@@ -146,21 +140,21 @@ Foundation for governance layer in Week 3.
 
 ### Skipped: CKV_AZURE_232 — System node taint
 **Why skipped:** Single node pool in dev. Taint requires separate
-system and user node pools — overengineered for Week 1.
-**When to fix:** Week 3 — add dedicated system node pool.
+system and user node pools
+**Fix:**- add dedicated system node pool.
 
 ---
 
 ### Skipped: CKV_AZURE_172 — Secrets Store CSI autorotation
 **Why skipped:** Key Vault integration doesn't exist yet.
-**When to fix:** Week 3 — wire Key Vault + CSI driver.
+**Fix:** — wire Key Vault + CSI driver.
 
 ---
 
 ### Skipped: CKV_AZURE_6 — API server authorized IP ranges
 **Why skipped:** Azure DevOps pipeline agents use dynamic IPs.
 Whitelisting them is not practical without a self-hosted agent.
-**When to fix:** Week 4 — if self-hosted agent is added, restrict
+**Fix:** — if self-hosted agent is added, restrict
 API server access to agent subnet IP range.
 
 ---
@@ -168,28 +162,28 @@ API server access to agent subnet IP range.
 ### Skipped: CKV_AZURE_117 — Disk encryption set
 **Why skipped:** Requires a Key Vault-backed disk encryption set.
 Key Vault module doesn't exist yet.
-**When to fix:** Week 3 — create Key Vault module first.
+**Fix:** — create Key Vault module first.
 
 ---
 
 ### Skipped: CKV_AZURE_115 — Private cluster
 **Why skipped:** Private AKS cluster requires private DNS zone
 and VPN/ExpressRoute or jump host for access. Out of scope for dev.
-**When to fix:** Week 4 — Landing Zone Factory will include private
+**Fix:**— Landing Zone Factory will include private
 cluster option for prod environments.
 
 ---
 
 ### Skipped: CKV_AZURE_227 — Temp disk encryption
 **Why skipped:** Requires disk encryption set backed by Key Vault.
-**When to fix:** Week 3 — alongside disk encryption set.
+**Fix:**— alongside disk encryption set.
 
 ---
 
 ### Skipped: CKV_AZURE_171 — Upgrade channel
 **Why skipped:** automatic_channel_upgrade attribute not supported
 in current azurerm provider version.
-**When to fix:** Week 2 — upgrade provider version, add
+**Fix:** — upgrade provider version, add
 automatic_channel_upgrade = "stable".
 
 ---
@@ -199,7 +193,7 @@ automatic_channel_upgrade = "stable".
 Basic SKU is sufficient for dev — image storage and pull works fine.
 We use Trivy in the pipeline for vulnerability scanning (CKV_AZURE_163)
 instead of ACR's native scanning.
-**When to fix:** Week 3 — upgrade ACR to Standard/Premium for
+**Fix:** — upgrade ACR to Standard/Premium for
 staging/prod and enable private endpoints, geo-replication, and
 native vulnerability scanning.
 
@@ -221,4 +215,4 @@ dns_service_ip 172.16.0.10 must be inside service_cidr.
 **Why:** Azure enabled OIDC on cluster during initial creation.
 Cannot be disabled once enabled. Keeping it enabled is correct
 long-term — OIDC issuer is required for Workload Identity
-which we'll use in Week 3 for pod-level managed identity.
+which we'll use for pod-level managed identity.
