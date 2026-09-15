@@ -1,6 +1,6 @@
 # Azure Environment Automation
 
-A Terraform-driven Azure platform environment — a private network, an AKS cluster, and a container registry — where every component, connection, and access rule is defined in code and provisioned through a reviewed, auditable pipeline instead of the Azure Portal.
+A Terraform-driven Azure platform environment a private network, an AKS cluster, and a container registry where every component, connection, and access rule is defined in code and provisioned through a reviewed, auditable pipeline instead of the Azure Portal.
 
 ## What gets provisioned
 
@@ -27,7 +27,7 @@ flowchart TB
     end
 ```
 
-No credentials connect the cluster to the registry — the AKS kubelet identity is granted the `AcrPull` role directly via Azure RBAC. Nothing to store, rotate, or leak.
+No credentials connect the cluster to the registry the AKS kubelet identity is granted the `AcrPull` role directly via Azure RBAC. Nothing to store, rotate, or leak.
 
 ## Repository structure
 
@@ -44,13 +44,13 @@ No credentials connect the cluster to the registry — the AKS kubelet identity 
 └── LICENSE
 ```
 
-Each module under `modules/` is self-contained (its own `variables.tf`/`outputs.tf`) so the same building blocks can be reused for additional environments — `environments/dev` is the only one wired up today.
+Each module under `modules/` is self-contained (its own `variables.tf`/`outputs.tf`) so the same building blocks can be reused for additional environments - `environments/dev` is the only one wired up today.
 
 ## Prerequisites
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) `~> 1.x`
 - An Azure subscription, and an identity with rights to create resource groups, networking, AKS, and ACR
-- An existing storage account for remote state (see `environments/dev/backend.tf`) — this project does not create its own state backend
+- An existing storage account for remote state (see `environments/dev/backend.tf`)
 - An Azure AD group whose object ID will be granted `admin_group_object_ids` on the cluster (see [`admin_group_object_id`](environments/dev/variables.tf))
 
 ## Usage
@@ -58,15 +58,13 @@ Each module under `modules/` is self-contained (its own `variables.tf`/`outputs.
 ```bash
 cd environments/dev
 
-# Authenticate first — either `az login` or export ARM_* env vars
+# Authenticate first - either `az login` or export ARM_* env vars
 # (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_TENANT_ID, ARM_SUBSCRIPTION_ID)
 
 terraform init
 terraform plan -var-file="terraform.tfvars"
 terraform apply -var-file="terraform.tfvars"
 ```
-
-`terraform.tfvars` in this repo is dev-specific and safe to version — it contains no secrets, only non-sensitive configuration (names, region, an AAD group object ID). The remote state backend's access key is supplied separately at `terraform init` time, never committed.
 
 ## CI/CD pipeline
 
@@ -79,20 +77,18 @@ flowchart LR
     C --> D["Apply\nterraform apply -auto-approve"]
 ```
 
-1. **Security scan** — [Checkov](https://www.checkov.io/) for IaC misconfigurations and [Gitleaks](https://github.com/gitleaks/gitleaks) for committed secrets
-2. **Plan** — `terraform plan` against the dev environment
-3. **Manual approval** — an Azure DevOps environment gate; nothing reaches Azure without a human reviewing the plan
-4. **Apply** — `terraform apply -auto-approve`, only after approval
-
-> **Known gap:** the Checkov step currently has no `--skip-check` configuration, but `decisions.md` documents several checks (e.g. `CKV_AZURE_170`, `CKV_AZURE_232`, `CKV_AZURE_115`) as deliberately skipped for dev. Until the pipeline is updated to match, the security-scan stage will fail on those checks. See the roadmap below.
+1. **Security scan** - [Checkov](https://www.checkov.io/) for IaC misconfigurations and [Gitleaks](https://github.com/gitleaks/gitleaks) for committed secrets
+2. **Plan** - `terraform plan` against the dev environment
+3. **Manual approval** - an Azure DevOps environment gate; nothing reaches Azure without a human reviewing the plan
+4. **Apply** - `terraform apply -auto-approve`, only after approval
 
 ## Security posture
 
-What's already in place, and why — full reasoning for each in [decisions.md](decisions.md):
+What's already in place, and why - full reasoning for each in [decisions.md](decisions.md):
 
 | Control | Status |
 |---|---|
-| Local admin account on AKS | Disabled — all access via Azure AD |
+| Local admin account on AKS | Disabled - all access via Azure AD |
 | Kubernetes authorization | Azure RBAC |
 | AKS → ACR authentication | Managed identity (`AcrPull` role), no credentials |
 | Subnet-level traffic control | NSG attached to every subnet |
@@ -103,15 +99,11 @@ What's already in place, and why — full reasoning for each in [decisions.md](d
 | Secret scanning | Gitleaks, on every pipeline run |
 | State isolation | One state file per environment |
 
-Several Checkov checks are intentionally not addressed yet (paid ACR SKU, private cluster, disk encryption sets, API server IP allow-listing) — each one is logged in `decisions.md` with the reason and the planned week it gets revisited, rather than silently suppressed.
-
 ## Roadmap
 
-- [ ] Fix Checkov skip-list mismatch between the pipeline and `decisions.md`
 - [ ] Key Vault module + Secrets Store CSI driver
 - [ ] Separate system/user AKS node pools
 - [ ] To add `staging` and `prod` environments, reusing the existing modules
-- [ ] Workload Identity (enabled by the OIDC issuer already on the cluster)
 - [ ] Private AKS cluster for prod
 - [ ] GitOps, observability, and governance layers
 
